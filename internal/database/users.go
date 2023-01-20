@@ -8,9 +8,11 @@ import (
 
 func (d *Db) createUser(u *models.User) (*models.User, error) {
 	tx := d.DB.Create(u)
+
 	if tx.RowsAffected < 1 {
 		return nil, errors.New("user already exists")
 	}
+
 	return u, nil
 }
 
@@ -21,6 +23,15 @@ func (d *Db) CreateUser(username string, password string) (*models.User, error) 
 	}
 
 	return d.createUser(u)
+}
+
+func (d *Db) UpdateUser(u *models.User) (*models.User, error) {
+	tx := d.DB.Where(&models.User{Username: u.Username}).Save(u)
+	if tx.Error != nil || tx.RowsAffected < 1 {
+		return nil, errors.New("not found")
+	}
+
+	return u, nil
 }
 
 func (d *Db) FindUser(username string) (*models.User, error) {
