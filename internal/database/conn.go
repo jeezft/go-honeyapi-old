@@ -40,6 +40,9 @@ func Init() (*Db, error) {
 		if err != nil {
 			log.Fatalln(err)
 		}
+
+		rt.Roles = models.ROLE_ADMIN
+
 		Latest.createUser(rt)
 		log.WithFields(log.Fields{"login": "root", "password": pp}).Info("User created")
 	}
