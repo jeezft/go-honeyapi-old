@@ -31,7 +31,7 @@ func (d *Db) CreateSession(user *models.User, ttl time.Duration) (string, error)
 
 	claims["authorized"] = true
 	claims["uID"] = user.ID
-	claims["tbd"] = tbd
+	claims["tbd"] = tbd.Format(time.RFC1123)
 
 	key, err := authKey.SignedString([]byte(cfg.Cfg.Jwt.SecretKey))
 	if err != nil {
@@ -83,7 +83,7 @@ func (d *Db) CheckSession(session string) (*models.Session, error) {
 		return nil, err
 	}
 
-	uID, ok := claims["uID"]
+	_, ok := claims["uID"]
 	if !ok {
 		return nil, fmt.Errorf("claims['uID'] does not exist")
 	}
@@ -93,8 +93,14 @@ func (d *Db) CheckSession(session string) (*models.Session, error) {
 		return nil, fmt.Errorf("claims['tbd'] does not exist")
 	}
 
-	fmt.Println(uID)
-	fmt.Println(tbd)
+	t, err := time.Parse(time.RFC1123, tbd.(string))
+	if err != nil {
+		return nil, err
+	}
+
+	if time.Now().After(t) {
+		return nil, fmt.Errorf("token is expired")
+	}
 
 	s, e := d.FindSession(session)
 
