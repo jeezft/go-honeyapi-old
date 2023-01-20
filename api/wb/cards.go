@@ -102,7 +102,7 @@ type SearchRes struct {
 
 func (a *Api) Search(srpx string) ([]*Card, error) {
 	c := resty.New()
-	req, err := c.R().Get("https://www.wildberries.ru/catalog/0/search.aspx?search=" + url.QueryEscape(srpx))
+	req, err := c.R().Get("https://search.wb.ru/exactmatch/ru/common/v4/search?appType=1&couponsGeo=2,12,7,3,6,18,21&curr=rub&dest=-1029256,-85617,-543140,-1586361&emp=0&lang=ru&locale=ru&pricemarginCoeff=1.0&reg=0&regions=80,64,83,4,38,33,70,68,69,86,30,40,48,1,66,31,22&resultset=catalog&sort=popular&spp=0&suppressSpellcheck=false&query=" + url.QueryEscape(srpx))
 	if err != nil {
 		return nil, err
 	}
@@ -114,9 +114,13 @@ func (a *Api) Search(srpx string) ([]*Card, error) {
 
 	var rsp SearchRes
 
+	fmt.Println(string(req.Body()))
+
 	if err = json.Unmarshal(req.Body(), &rsp); err != nil {
 		return nil, err
 	}
+
+	fmt.Println("asd")
 
 	var products []*Card
 
@@ -126,7 +130,7 @@ func (a *Api) Search(srpx string) ([]*Card, error) {
 	}
 
 	for _, itm := range rsp.Data.Products {
-		c := &Card{
+		card := &Card{
 			Name:       itm.Name,
 			ID:         itm.ID,
 			SupplierID: itm.SupplierID,
@@ -135,10 +139,10 @@ func (a *Api) Search(srpx string) ([]*Card, error) {
 		}
 		for _, c := range cpm {
 			if c.ID == itm.ID {
-				c.CPM = c.CPM
+				card.CPM = c.ID
 			}
 		}
-		products = append(products, c)
+		products = append(products, card)
 	}
 
 	return products, nil
