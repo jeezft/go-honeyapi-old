@@ -23,6 +23,14 @@ func startServer() error {
 	//wb
 	w := v1.Group("/wb")
 	w.Post("/search", handlers.Search)
+	w.Post("/addtoken", handlers.AddToken)
+	w.Get("/tokens", handlers.GetTokens)
+
+	//admin
+	a := v1.Group("/admin")
+	// a.Post("/getuser")
+	a.Post("/balance", handlers.SetBalance).
+		Get("/balance", handlers.GetBalance)
 
 	return s.Listen(":8080")
 }
