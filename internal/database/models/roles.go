@@ -1,6 +1,7 @@
 package models
 
 var (
-	ROLE_ADMIN     = 69
-	ROLE_MAIL_AUTH = 1
+	ROLE_DEFAULT   = int8(0)
+	ROLE_MAIL_AUTH = int8(1)
+	ROLE_ADMIN     = int8(69)
 )
