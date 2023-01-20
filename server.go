@@ -20,5 +20,9 @@ func startServer() error {
 	u.Post("/auth", handlers.Authorization)
 	u.Get("/whoami", handlers.Userinfo)
 
+	//wb
+	w := v1.Group("/wb")
+	w.Post("/search", handlers.Search)
+
 	return s.Listen(":8080")
 }
