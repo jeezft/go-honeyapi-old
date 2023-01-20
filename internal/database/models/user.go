@@ -9,12 +9,11 @@ type User struct {
 	Username string `gorm:"unique"`
 	Password []byte
 	Roles    int8
+	Balance  int
 	gorm.Model
 }
 
 var salt = "Euhcmx4@ed8X2H4"
-
-var DEFAULT_ROLES = 0
 
 func User_Frompass(username string, password string) (*User, error) {
 	p, e := GetPassHash(password)
@@ -25,7 +24,7 @@ func User_Frompass(username string, password string) (*User, error) {
 	return &User{
 		Username: username,
 		Password: p,
-		Roles:    int8(DEFAULT_ROLES),
+		Roles:    ROLE_DEFAULT,
 	}, nil
 }
 
