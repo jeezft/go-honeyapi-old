@@ -11,6 +11,7 @@ import (
 type Userout struct {
 	UserID       uint
 	Username     string
+	Balance      int
 	SessionID    uint
 	CreationDate string
 	Roles        int8
@@ -44,6 +45,7 @@ func Userinfo(ctx *fiber.Ctx) error {
 	out, err := json.Marshal(&Userout{
 		UserID:       u.ID,
 		Username:     u.Username,
+		Balance:      u.Balance,
 		SessionID:    session.ID,
 		CreationDate: u.CreatedAt.Format("15:04:05-02/01/2006"),
 		Roles:        u.Roles,
