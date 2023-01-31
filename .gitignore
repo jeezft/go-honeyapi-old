@@ -17,3 +17,4 @@ config.yaml
 config.toml
 parsed
 parsed.json
+go-honeyap*
