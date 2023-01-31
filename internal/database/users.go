@@ -16,8 +16,12 @@ func (d *Db) createUser(u *models.User) (*models.User, error) {
 	return u, nil
 }
 
-func (d *Db) CreateUser(username string, password string) (*models.User, error) {
-	u, e := models.User_Frompass(username, password)
+func (d *Db) CreateUser(username string, email string, password string) (*models.User, error) {
+	if len(email) < 1 {
+		return nil, errors.New("no email")
+	}
+
+	u, e := models.User_Frompass(username, email, password)
 	if e != nil {
 		return nil, e
 	}
