@@ -1,13 +1,22 @@
 package main
 
 import (
+	"strconv"
+
 	"github.com/ProSellers/go-honeyapi/api/handlers"
+	"github.com/ProSellers/go-honeyapi/utils/cfg"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
 func startServer() error {
 
 	s := fiber.New()
+
+	s.Use(cors.New(cors.Config{
+		AllowOrigins: "http://localhost:8848",
+		AllowHeaders: "Origin, Content-Type, Accept",
+	}))
 
 	api := s.Group("/api")
 	v1 := api.Group("/v1")
@@ -32,5 +41,5 @@ func startServer() error {
 	a.Post("/balance", handlers.SetBalance).
 		Get("/balance", handlers.GetBalance)
 
-	return s.Listen(":8080")
+	return s.Listen(":" + strconv.Itoa(cfg.Cfg.Port))
 }
