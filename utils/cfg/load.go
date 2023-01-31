@@ -14,6 +14,7 @@ type Config struct {
 	Database *db
 	Captcha  *captcha
 	Jwt      *jwtauth
+	Port     int
 }
 
 type db struct {
