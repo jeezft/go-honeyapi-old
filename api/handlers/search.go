@@ -45,7 +45,7 @@ func Search(ctx *fiber.Ctx) error {
 
 	w := wb.New()
 
-	cards, err := w.Search(inp.Srpx)
+	cards, err := w.Search(inp.Srpx, 1)
 	if err != nil {
 		return err
 	}
