@@ -2,8 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"regexp"
-	"strconv"
+	"time"
 
 	"github.com/ProSellers/go-honeyapi/internal/database"
 	"github.com/gofiber/fiber/v2"
@@ -14,7 +15,13 @@ import (
 type reginp struct {
 	HcaptchaToken string
 	Username      string
+	Email         string
 	Password      string
+}
+
+type tokenresp struct {
+	UserID uint
+	Token  string
 }
 
 var symbolAndCapsRegex = regexp.MustCompile(`(?i)[A-Z][!@#$%^&*()_+-=[]{}\\|;':\"<>,./?\[\]]`)
@@ -30,12 +37,23 @@ func Register(ctx *fiber.Ctx) error {
 		return fiber.ErrNotAcceptable
 	}
 
-	user, e := database.Latest.CreateUser(r.Username, r.Password)
+	user, e := database.Latest.CreateUser(r.Username, r.Email, r.Password)
 	if e != nil {
 		return e
 	}
 
-	return ctx.SendString(strconv.Itoa(int(user.ID)))
+	key, e := database.Latest.CreateSession(user, time.Duration(time.Hour*980))
+	if e != nil {
+		fmt.Println(e)
+		return e
+	}
+
+	b, err := json.Marshal(&tokenresp{Token: key, UserID: user.ID})
+	if err != nil {
+		return err
+	}
+
+	return ctx.Send(b)
 }
 
 // {
