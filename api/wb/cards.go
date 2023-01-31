@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"strconv"
 
 	"github.com/corpix/uarand"
 	"github.com/go-resty/resty/v2"
@@ -100,9 +101,24 @@ type SearchRes struct {
 	} `json:"data"`
 }
 
-func (a *Api) Search(srpx string) ([]*Card, error) {
+type BrandlistO struct {
+	ResultState int   `json:"resultState"`
+	Value       Value `json:"value"`
+}
+type Brand struct {
+	ID       int    `json:"id"`
+	URL      string `json:"url"`
+	Name     string `json:"name"`
+	LogoPath string `json:"logoPath"`
+}
+type Value struct {
+	BrandsCount string  `json:"brandsCount"`
+	BrandsList  []Brand `json:"brandsList"`
+}
+
+func (a *Api) Search(srpx string, page int) ([]*Card, error) {
 	c := resty.New()
-	req, err := c.R().Get("https://search.wb.ru/exactmatch/ru/common/v4/search?appType=1&couponsGeo=2,12,7,3,6,18,21&curr=rub&dest=-1029256,-85617,-543140,-1586361&emp=0&lang=ru&locale=ru&pricemarginCoeff=1.0&reg=0&regions=80,64,83,4,38,33,70,68,69,86,30,40,48,1,66,31,22&resultset=catalog&sort=popular&spp=0&suppressSpellcheck=false&query=" + url.QueryEscape(srpx))
+	req, err := c.R().Get("https://search.wb.ru/exactmatch/ru/common/v4/search?appType=1&couponsGeo=2,12,7,3,6,18,21&curr=rub&dest=-1029256,-85617,-543140,-1586361&emp=0&lang=ru&locale=ru&pricemarginCoeff=1.0&reg=0&regions=80,64,83,4,38,33,70,68,69,86,30,40,48,1,66,31,22&resultset=catalog&sort=popular&spp=0&suppressSpellcheck=false&page=" + strconv.Itoa(page) + "&query=" + url.QueryEscape(srpx))
 	if err != nil {
 		return nil, err
 	}
@@ -114,20 +130,16 @@ func (a *Api) Search(srpx string) ([]*Card, error) {
 
 	var rsp SearchRes
 
-	fmt.Println(string(req.Body()))
-
 	if err = json.Unmarshal(req.Body(), &rsp); err != nil {
 		return nil, err
 	}
 
-	fmt.Println("asd")
-
 	var products []*Card
 
 	cpm, err := a.GetCPM(srpx)
-	if err != nil {
-		return nil, errors.New("Cannot retrieve CPMs")
-	}
+	// if err != nil {
+	// 	return nil, errors.New("cannot retrieve CPMs")
+	// }
 
 	for _, itm := range rsp.Data.Products {
 		card := &Card{
@@ -150,6 +162,7 @@ func (a *Api) Search(srpx string) ([]*Card, error) {
 
 func (a *Api) GetCPM(srpx string) ([]*Cpm, error) {
 	c := resty.New()
+
 	resp, err := c.R().SetHeader("User-Agent", uarand.GetRandom()).Get("https://catalog-ads.wildberries.ru/api/v5/search?keyword=" + url.QueryEscape(srpx))
 	if err != nil {
 		return nil, err
@@ -158,6 +171,7 @@ func (a *Api) GetCPM(srpx string) ([]*Cpm, error) {
 	cpm := &CpmQuery{}
 
 	if err = json.Unmarshal(resp.Body(), &cpm); err != nil {
+		fmt.Println(string(resp.Body()))
 		return nil, err
 	}
 
