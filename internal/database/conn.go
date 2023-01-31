@@ -36,7 +36,7 @@ func Init() (*Db, error) {
 
 	if tx.RowsAffected < 1 {
 		pp := utils.RandStringBytesMaskImprSrcSB(18)
-		rt, err := models.User_Frompass("root", pp)
+		rt, err := models.User_Frompass("root", "root@root.pp", pp)
 		if err != nil {
 			log.Fatalln(err)
 		}
