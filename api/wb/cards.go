@@ -151,7 +151,7 @@ func (a *Api) Search(srpx string, page int) ([]*Card, error) {
 		}
 		for _, c := range cpm {
 			if c.ID == itm.ID {
-				card.CPM = c.ID
+				card.CPM = c.CPM
 			}
 		}
 		products = append(products, card)

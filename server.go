@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"strconv"
 
 	"github.com/ProSellers/go-honeyapi/api/handlers"
@@ -11,11 +12,22 @@ import (
 
 func startServer() error {
 
-	s := fiber.New()
+	s := fiber.New(fiber.Config{
+		ErrorHandler: func(ctx *fiber.Ctx, err error) error {
+			code := fiber.StatusInternalServerError
+
+			var e *fiber.Error
+			if errors.As(err, &e) {
+				code = e.Code
+			}
+
+			return ctx.Status(code).JSON(fiber.Map{"status": code, "message": err.Error()})
+		},
+	})
 
 	s.Use(cors.New(cors.Config{
-		AllowOrigins: "http://localhost:8848",
-		AllowHeaders: "Origin, Content-Type, Accept",
+		AllowOrigins: "*",
+		AllowHeaders: "*",
 	}))
 
 	api := s.Group("/api")
@@ -27,7 +39,7 @@ func startServer() error {
 	u := v1.Group("/users")
 	u.Post("/register", handlers.Register)
 	u.Post("/auth", handlers.Authorization)
-	u.Get("/whoami", handlers.Userinfo)
+	u.Get("/@me", handlers.Userinfo)
 
 	//wb
 	w := v1.Group("/wb")

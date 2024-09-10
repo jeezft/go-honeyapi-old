@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/corpix/uarand"
 	"github.com/go-resty/resty/v2"
@@ -70,10 +71,17 @@ type Data struct {
 }
 
 func (a *Api) GetBrandList(letter string) (*BrandlistO, error) {
-	c := resty.New()
+	c := resty.New().SetTimeout(time.Second * 30)
+
+	if a.Proxy != nil {
+		c.SetProxy(a.Proxy.ToString())
+	}
 
 	resp, err := c.R().SetHeader("User-Agent", uarand.GetRandom()).Post("https://www.wildberries.ru/webapi/wildberries/brandlist/data?letter=" + letter)
 	if err != nil {
+		if a.Proxy != nil {
+			a.Proxy.Error()
+		}
 		return nil, err
 	}
 

@@ -12,6 +12,15 @@ import (
 
 // var client = hcaptcha.New(cfg.Cfg.Captcha.SecretKey)
 
+var ErrNoEmail = fiber.NewError(fiber.ErrBadRequest.Code, "Вы не ввели EMAIL")
+var ErrNotAnEmail = fiber.NewError(fiber.ErrBadRequest.Code, "EMAIL неверный")
+
+var ErrNoLogin = fiber.NewError(fiber.ErrBadRequest.Code, "Вы не ввели логин")
+var ErrLoginIsTooShort = fiber.NewError(fiber.ErrBadRequest.Code, "Логин слишком короткий, минимальная длина 3 символа")
+
+var ErrNoPassword = fiber.NewError(fiber.ErrBadRequest.Code, "Вы не ввели пароль")
+var ErrWeakPassword = fiber.NewError(fiber.ErrBadRequest.Code, "Пароль, который вы ввели слишком слаб. Длина пароля должна быть больше 6 символов. Добавьте большие буквы и символы")
+
 type reginp struct {
 	HcaptchaToken string
 	Username      string
@@ -27,14 +36,31 @@ type tokenresp struct {
 var symbolAndCapsRegex = regexp.MustCompile(`(?i)[A-Z][!@#$%^&*()_+-=[]{}\\|;':\"<>,./?\[\]]`)
 
 func Register(ctx *fiber.Ctx) error {
+
 	var r reginp
 	err := json.Unmarshal(ctx.Body(), &r)
 	if err != nil {
 		return err
 	}
 
-	if len(r.Username) < 3 || len(r.Password) < 6 || symbolAndCapsRegex.MatchString(r.Password) {
-		return fiber.ErrNotAcceptable
+	if r.Username == "" {
+		return ErrNoLogin
+	}
+
+	if r.Password == "" {
+		return ErrNoPassword
+	}
+
+	if r.Email == "" {
+		return ErrNoEmail
+	}
+
+	if len(r.Username) < 3 {
+		return ErrLoginIsTooShort
+	}
+
+	if len(r.Password) < 6 || symbolAndCapsRegex.MatchString(r.Password) {
+		return ErrWeakPassword
 	}
 
 	user, e := database.Latest.CreateUser(r.Username, r.Email, r.Password)

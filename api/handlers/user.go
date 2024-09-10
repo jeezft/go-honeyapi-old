@@ -9,12 +9,12 @@ import (
 )
 
 type Userout struct {
-	UserID       uint
-	Username     string
-	Balance      int
-	SessionID    uint
-	CreationDate string
-	Roles        int8
+	UserID       uint   `json:"userid"`
+	Username     string `json:"username"`
+	Balance      int    `json:"balance"`
+	SessionID    uint   `json:"sessionid"`
+	CreationDate string `json:"created_at"`
+	Roles        int8   `json:"roles"`
 }
 
 func Userinfo(ctx *fiber.Ctx) error {

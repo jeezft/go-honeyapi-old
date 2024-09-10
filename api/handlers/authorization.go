@@ -7,8 +7,9 @@ import (
 
 	"github.com/ProSellers/go-honeyapi/internal/database"
 	"github.com/gofiber/fiber/v2"
-	log "github.com/sirupsen/logrus"
 )
+
+var ErrLogPass = fiber.NewError(403, "invalid login/password")
 
 type loginendpoint struct {
 	Username string `json:"username"`
@@ -26,16 +27,15 @@ func Authorization(ctx *fiber.Ctx) error {
 	user, err := database.Latest.FindUser(l.Username)
 	if err != nil {
 		fmt.Println(err)
-		return fiber.ErrForbidden
+		return ErrLogPass
 	}
-
-	fmt.Println(user)
 
 	err = database.Latest.CheckPassword(user, l.Password)
 	if err != nil {
-		log.WithFields(log.Fields{"err": err}).Errorln("User pass error")
-		return fiber.ErrForbidden
+		// log.WithFields(log.Fields{"err": err}).Errorln("User pass error")
+		return ErrLogPass
 	}
+
 	ttl := time.Duration(time.Hour * 3)
 
 	if l.Long {
@@ -48,5 +48,10 @@ func Authorization(ctx *fiber.Ctx) error {
 		return e
 	}
 
-	return ctx.SendString(key)
+	b, err := json.Marshal(&tokenresp{Token: key, UserID: user.ID})
+	if err != nil {
+		return err
+	}
+
+	return ctx.Send(b)
 }
